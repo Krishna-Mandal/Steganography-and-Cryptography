@@ -148,9 +148,9 @@ files:
 - name: test/out.png
   visible: true
   learner_created: true
-feedback_link: https://hyperskill.org/projects/160/stages/831/implement#comment
+feedback_link: https://hyperskill.org/learn/step/12267#comment
 status: Solved
 feedback:
   message: Congratulations!
   time: Tue, 02 Aug 2022 12:27:43 UTC
-record: -1
+record: 1
