@@ -5,6 +5,7 @@ import java.awt.image.BufferedImage
 import java.io.File
 import java.lang.Integer.toBinaryString
 import javax.imageio.ImageIO
+import kotlin.experimental.xor
 
 
 fun main() {
@@ -45,9 +46,13 @@ fun hide() {
 
     println("Message to hide:")
     val msg = readln()
+    println("Password:")
+    val pwd = readln()
+
     val imgSize = bufferedImageIn.width * bufferedImageIn.height
     val msgBits = mutableListOf<String>()
-    val msgByte = "$msg\u0000\u0000\u0003".toByteArray()
+    val msgByteOrig = msg.toByteArray()
+    val msgByte = encryptDecrypt(msgByteOrig, pwd.encodeToByteArray()) + byteArrayOf(0.toByte(), 0.toByte(), 3.toByte())
     msgByte.forEach { String.format("%8s", toBinaryString(it.toInt())).replace(' ', '0').forEach { bit -> msgBits.add(bit.toString()) } }
 
     if(imgSize < msgBits.size) {
@@ -89,6 +94,8 @@ fun show() {
     println("Input image file:")
 
     val inImage = readln()
+    println("Password:")
+    val pwd = readln()
     val inBufferedImage = ImageIO.read(File(inImage))
     val msgArray = mutableListOf<Int>()
 
@@ -100,8 +107,24 @@ fun show() {
         }
     }
     println("Message:")
-    println(msgArray.joinToString("").split("000000000000000000000011").first().chunked(8).forEach { print(it.toInt(2).toChar()) })
+    val allMessage = msgArray.joinToString(separator = "")
+    val reqMesaage = allMessage.substring(0, allMessage.indexOf("000000000000000000000011"))
+    val decryptMessage = encryptDecrypt(reqMesaage.chunked(8).map { it.toByte(2) }.toByteArray(), pwd.toByteArray())
+    decryptMessage.toString(Charsets.UTF_8).chunked(8).forEach {
+        print(it)
+    }
 
+}
+
+fun encryptDecrypt(msg: ByteArray, pwd: ByteArray): ByteArray {
+    var newMsg = ByteArray(0)
+    for (i in msg.indices) {
+        val pwdIndex = i % pwd.size
+        val pwdToEncrypt = pwd[pwdIndex]
+        newMsg += msg[i].xor(pwdToEncrypt)
+    }
+
+    return newMsg
 }
 
 
